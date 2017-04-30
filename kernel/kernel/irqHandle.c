@@ -32,7 +32,7 @@ void __attribute__ ((noinline)) sys_write(struct TrapFrame *tf)
 {
 	
 	int val_ascii=tf->ecx;
-	//putChar(tf->ecx);
+	putChar(tf->ecx);
 	//tf->eax=1;
 	if(val_ascii=='\n')
 	{
@@ -53,7 +53,7 @@ void __attribute__ ((noinline)) sys_write(struct TrapFrame *tf)
 			imull $2, %%eax;\
 			movl %%eax, %%edi;\
 			movb %2, %%al;\
-			movb $0x0c, %%ah;\
+			movb $0x0f, %%ah;\
 			movw %%ax, %%gs:(%%edi)\
 			": :"m"(scrX), "m"(scrY),"m"(tf->ecx));
 	scrY++;
@@ -62,7 +62,7 @@ void __attribute__ ((noinline)) sys_write(struct TrapFrame *tf)
 		scrX++;
 		scrY=0;
 	}
-	putChar(tf->ecx);
+	//putChar(tf->ecx);
 	//tf->eax=1;
 }
 void syscallHandle(struct TrapFrame *tf) {

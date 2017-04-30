@@ -63,7 +63,7 @@ void initIdt() {
 	 * 初始化 IDT 表, 为中断设置中断处理函数
 	 */
 	
-	/*setTrap(idt + 0x0, SEG_KCODE, (uint32_t)irqDivError, DPL_KERN);
+	setTrap(idt + 0x0, SEG_KCODE, (uint32_t)irqDivError, DPL_KERN);
 	setTrap(idt + 0x1, SEG_KCODE, (uint32_t)irqStepOver, DPL_KERN);
 	setTrap(idt + 0x2, SEG_KCODE, (uint32_t)irqNMIInterrupt, DPL_KERN);
 	setTrap(idt + 0x3, SEG_KCODE, (uint32_t)irqBreakPoint, DPL_KERN);
@@ -76,7 +76,7 @@ void initIdt() {
 	setTrap(idt + 0xa, SEG_KCODE, (uint32_t)irqInvalidTSS, DPL_KERN);
 	setTrap(idt + 0xb, SEG_KCODE, (uint32_t)irqNoSegment, DPL_KERN);
 	setTrap(idt + 0xc, SEG_KCODE, (uint32_t)irqStackSegmentFault, DPL_KERN);
-	setTrap(idt + 0xe, SEG_KCODE, (uint32_t)irqPageFault, DPL_KERN);*/
+	setTrap(idt + 0xe, SEG_KCODE, (uint32_t)irqPageFault, DPL_KERN);
 	
 	setTrap(idt + 0xd, SEG_KCODE, (uint32_t)irqGProtectFault, DPL_KERN);
 	

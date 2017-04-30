@@ -38,12 +38,12 @@ void initSeg() {
 	gdt[SEG_TSS].s = 0;
 	setGdt(gdt, sizeof(gdt));
 	tss.ss0=KSEL(SEG_KDATA);
-	tss.esp0=0xf00000;
+	tss.esp0=0x7f00000;
 	/*
 	 * 初始化TSS
 	 */
 
-	//tss.ss0=0x10;
+	//tss.ss0=0x8;
 	//tss.esp0=0x80000000;
 	asm volatile("ltr %%ax":: "a" (KSEL(SEG_TSS)));
 
