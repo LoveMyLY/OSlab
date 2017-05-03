@@ -26,6 +26,13 @@
 #define KSEL(desc) (((desc) << 3) | DPL_KERN)
 #define USEL(desc) (((desc) << 3) | DPL_USER)
 
+#define MAX_STACK_SIZE 2000
+#define MAX_PCB_NUM 8
+#define RUNNING 1
+#define RUNNABLE 2
+#define SLEEP 3
+#define DEAD 4
+
 struct GateDescriptor {
 	uint32_t offset_15_0      : 16;
 	uint32_t segment          : 16;
@@ -38,9 +45,25 @@ struct GateDescriptor {
 };
 
 struct TrapFrame {
+	uint32_t gs,fs,es,ds;
 	uint32_t edi, esi, ebp, xxx, ebx, edx, ecx, eax;
 	int32_t irq;
+	uint32_t error;
+	uint32_t eip,cs,eflags,esp,ss;
 };
+
+struct ProcessTable
+{
+	uint32_t stack[MAX_STACK_SIZE];
+	struct TrapFrame tf;
+	int state;
+	int timeCount;
+	int sleepTime;
+	uint32_t pid;
+	int inuse;
+};
+struct ProcessTable pcb[MAX_PCB_NUM];
+int curpcb;
 
 /*
 1. The number of bits in a bit field sets the limit to the range of values it can hold

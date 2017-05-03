@@ -38,13 +38,13 @@ void initSeg() {
 	gdt[SEG_TSS].s = 0;
 	setGdt(gdt, sizeof(gdt));
 	tss.ss0=KSEL(SEG_KDATA);
-	tss.esp0=0x7f00000;
+	//tss.esp0=0x7f00000;
 	/*
 	 * 初始化TSS
 	 */
 
 	//tss.ss0=0x8;
-	//tss.esp0=0x80000000;
+	tss.esp0=0x8000000;
 	asm volatile("ltr %%ax":: "a" (KSEL(SEG_TSS)));
 
 	/*设置正确的段寄存器*/
@@ -77,10 +77,10 @@ void __attribute__((noinline)) enterUserSpace(uint32_t entry) {
 	asm volatile("iret");*/
 	uint32_t eflags = 0x00000002;
 	
-	asm volatile("movw %%ax, %%es"::"a"(USEL(SEG_UDATA)));  //es
-	asm volatile("movw %%ax, %%ds"::"a"(USEL(SEG_UDATA)));  //ds
+	//asm volatile("movw %%ax, %%es"::"a"(USEL(SEG_UDATA)));  //es
+	//asm volatile("movw %%ax, %%ds"::"a"(USEL(SEG_UDATA)));  //ds
 	asm volatile("pushw %0"::"i"(USEL(SEG_UDATA)));         //ss
-	asm volatile("pushl %0"::"i"(128<<10));                 //esp
+	asm volatile("pushl %0"::"i"(128<<20));                 //esp
 	//将eflags cs eip依次压栈
 	asm volatile("pushl %0"::"m"(eflags));                  //eflags
 	asm volatile("pushl %0"::"i"(USEL(SEG_UCODE)));	        //cs

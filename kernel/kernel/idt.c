@@ -50,6 +50,7 @@ void irqInvalidTSS();
 void irqNoSegment();
 void irqStackSegmentFault();
 void irqPageFault();
+void irqTime();
 
 
 void initIdt() {
@@ -79,7 +80,8 @@ void initIdt() {
 	setTrap(idt + 0xe, SEG_KCODE, (uint32_t)irqPageFault, DPL_KERN);
 	
 	setTrap(idt + 0xd, SEG_KCODE, (uint32_t)irqGProtectFault, DPL_KERN);
-	
+
+	setIntr(idt + 0x20, SEG_KCODE, (uint32_t)irqTime, DPL_USER);
 	setIntr(idt + 0x80, SEG_KCODE, (uint32_t)irqSyscall, DPL_USER); // for int 0x80, interrupt vector is 0x80, Interruption is disabled
 
 	/* 写入IDT */

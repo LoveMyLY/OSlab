@@ -8,5 +8,6 @@
 
 void initSeg(void);
 void loadUMain(void);
+void initPcb();
 
 #endif

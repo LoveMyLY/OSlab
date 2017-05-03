@@ -2,9 +2,13 @@
 #include "device.h"
 #include "common.h"
 
+
 void syscallHandle(struct TrapFrame *tf);
 
 void GProtectFaultHandle(struct TrapFrame *tf);
+
+void Intrtime(struct TrapFrame *tf);
+void sys_fork(struct TrapFrame *tf);
 
 void irqHandle(struct TrapFrame *tf) {
 	/*
@@ -20,6 +24,15 @@ void irqHandle(struct TrapFrame *tf) {
 			break;
 		case 0xd:
 			GProtectFaultHandle(tf);
+			break;
+		case 0x20:
+			/*putChar('e');
+			putChar('n');
+			putChar('t');
+			putChar('e');
+			putChar('r');
+			putChar('0');*/
+			Intrtime(tf);
 			break;
 		case 0x80:
 			syscallHandle(tf);
@@ -70,6 +83,13 @@ void syscallHandle(struct TrapFrame *tf) {
 	
 	switch(tf->eax)
 	{
+		case 2:
+			putChar('f');
+			putChar('o');
+			putChar('r');
+			putChar('k');
+			sys_fork(tf);
+			break;
 		case 4:
 			sys_write(tf);break;
 		default:
