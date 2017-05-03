@@ -38,18 +38,18 @@ void initSeg() {
 	gdt[SEG_TSS].s = 0;
 	setGdt(gdt, sizeof(gdt));
 	tss.ss0=KSEL(SEG_KDATA);
-	//tss.esp0=0x7f00000;
+	tss.esp0=0x7f00000;
 	/*
 	 * 初始化TSS
 	 */
 
 	//tss.ss0=0x8;
-	tss.esp0=0x8000000;
+	//tss.esp0=0x8000000;
 	asm volatile("ltr %%ax":: "a" (KSEL(SEG_TSS)));
 
 	/*设置正确的段寄存器*/
 
-	/*asm volatile("\
+	asm volatile("\
 			movw $0x10,%ax;\
 			movw %ax,%ds;\
 			movw %ax,%es;\
@@ -57,7 +57,7 @@ void initSeg() {
 			movw %ax,%fs;\
 			movw $0x30,%ax;\
 			movw %ax,%gs;\
-			");*/
+			");
 
 	lLdt(0);
 	
@@ -75,7 +75,7 @@ void __attribute__((noinline)) enterUserSpace(uint32_t entry) {
 	asm volatile("pushl $0x1b");
 	asm volatile("pushl %0": :"m"(entry));
 	asm volatile("iret");*/
-	uint32_t eflags = 0x00000002;
+	/*uint32_t eflags = 0x00000002;
 	
 	//asm volatile("movw %%ax, %%es"::"a"(USEL(SEG_UDATA)));  //es
 	//asm volatile("movw %%ax, %%ds"::"a"(USEL(SEG_UDATA)));  //ds
@@ -85,8 +85,18 @@ void __attribute__((noinline)) enterUserSpace(uint32_t entry) {
 	asm volatile("pushl %0"::"m"(eflags));                  //eflags
 	asm volatile("pushl %0"::"i"(USEL(SEG_UCODE)));	        //cs
 	asm volatile("pushl %0"::"m"(entry));                   //eip
-	asm volatile("iret");
-	 
+	*/
+	asm volatile("movl $0x23,%%eax;\
+                  movl %%eax,%%ds;\
+                  movl %%eax,%%es;\
+                  pushl %%eax;\
+                  pushl $(128<<20);\
+                  pushf;\
+                  pushl $0x1b;\
+                  pushl %0;\
+                  "::"m"(entry));
+	enableInterrupt();
+	 asm volatile("iret");
 	//void (*e)(void)=(void*)entry;
 	//e();
 }

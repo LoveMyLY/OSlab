@@ -232,20 +232,33 @@ int fork()
 {
 	int ret=0;
 	asm volatile("pushl %eax");
-	asm volatile("pushl %ebx");
+	//asm volatile("pushl %ebx");
 	asm volatile("movl $0x2,%eax");
 	asm volatile("int $0x80");
-	asm volatile("movl %%eax,%0"::"m"(ret));
-	asm volatile("popl %ebx");
+	asm volatile("movl %%eax,%0":"=m"(ret));
+	//asm volatile("popl %ebx");
 	asm volatile("popl %eax");
 	return ret;
 	//return 0;
 }
-int sleep(unsigned time)
+int sleep(uint32_t time)
 {
+	asm volatile("pushl %eax");
+	asm volatile("pushl %ebx");
+	asm volatile("movl $0x3,%eax");
+	asm volatile("movl %0,%%ebx"::"m"(time));
+	asm volatile("int $0x80");
+	asm volatile("popl %ebx");
+	asm volatile("popl %eax");
 	return 0;
 }
 int exit()
 {
+	asm volatile("pushl %eax");
+	//asm volatile("pushl %ebx");
+	asm volatile("movl $0x5,%eax");
+	asm volatile("int $0x80");
+	asm volatile("popl %eax");
 	return 0;
 }
+

@@ -8,7 +8,9 @@ void syscallHandle(struct TrapFrame *tf);
 void GProtectFaultHandle(struct TrapFrame *tf);
 
 void Intrtime(struct TrapFrame *tf);
-void sys_fork(struct TrapFrame *tf);
+int sys_fork(struct TrapFrame *tf);
+int sys_sleep(struct TrapFrame *tf);
+int sys_exit(struct TrapFrame *tf);
 
 void irqHandle(struct TrapFrame *tf) {
 	/*
@@ -16,9 +18,21 @@ void irqHandle(struct TrapFrame *tf) {
 	 */
 	/* Reassign segment register */
 
-	asm volatile("movw %%ax, %%es"::"a"(KSEL(SEG_KDATA)));
+	/*asm volatile("movw %%ax, %%es"::"a"(KSEL(SEG_KDATA)));
 	asm volatile("movw %%ax, %%ds"::"a"(KSEL(SEG_KDATA)));
-	asm volatile("movw %%ax, %%ss"::"a"(KSEL(SEG_KDATA)));
+	//asm volatile("movw %%ax, %%ss"::"a"(KSEL(SEG_KDATA)));
+	asm volatile("movw $0x30,%%ax");
+	asm volatile("movw %%ax,%%gs");*/
+	asm volatile("\
+            movw $0x10,%ax;\
+            movw %ax,%ds;\
+            movw %ax,%es;\
+            movw $0x30,%ax;\
+            movw %ax,%gs;\
+            ");
+
+	putChar('0'+curpcb);
+
 	switch(tf->irq) {
 		case -1:
 			break;
@@ -26,18 +40,25 @@ void irqHandle(struct TrapFrame *tf) {
 			GProtectFaultHandle(tf);
 			break;
 		case 0x20:
-			/*putChar('e');
-			putChar('n');
-			putChar('t');
+			/*putChar('t');
+			putChar('i');
+			putChar('m');
 			putChar('e');
-			putChar('r');
-			putChar('0');*/
+			putChar('r');*/
 			Intrtime(tf);
+			//putChar('\n');
+			//putChar('0'+curpcb);
+			//putChar(' ');
 			break;
 		case 0x80:
 			syscallHandle(tf);
 			break;
 		default:assert(0);
+		asm volatile("\
+            movw %0,%%ds;\
+            movw %1,%%es;\
+            movw %2,%%gs;\
+            "::"m"(tf->ds),"m"(tf->es),"m"(tf->gs));
 	}
 }
 int scrX=5,scrY=0;
@@ -80,18 +101,34 @@ void __attribute__ ((noinline)) sys_write(struct TrapFrame *tf)
 }
 void syscallHandle(struct TrapFrame *tf) {
 	/* 实现系统调用*/
-	
+	//int i=-1;
 	switch(tf->eax)
 	{
 		case 2:
-			putChar('f');
+			/*putChar('f');
 			putChar('o');
 			putChar('r');
-			putChar('k');
+			putChar('k');*/
 			sys_fork(tf);
+			//putChar('0'+i);
+			break;
+		case 3:
+			/*putChar('s');
+			putChar('l');
+			putChar('e');
+			putChar('e');
+			putChar('p');*/
+			//putChar('0'+curpcb);
+			sys_sleep(tf);
 			break;
 		case 4:
 			sys_write(tf);break;
+		case 5:
+			/*putChar('e');
+			putChar('x');
+			putChar('i');
+			putChar('t');*/
+			sys_exit(tf);break;
 		default:
 			assert(0);
 	}
