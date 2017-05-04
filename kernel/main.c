@@ -1,7 +1,8 @@
 #include "common.h"
 #include "x86.h"
 #include "device.h"
-#include "time.h"
+
+extern void initTimer();
 
 void kEntry(void) {
 

@@ -34,17 +34,17 @@ void initSeg() {
 	gdt[SEG_UCODE] = SEG(STA_X | STA_R, 0,       0xffffffff, DPL_USER);
 	gdt[SEG_UDATA] = SEG(STA_W,         0,       0xffffffff, DPL_USER);
 	gdt[SEG_TSS] = SEG16(STS_T32A,      &tss, sizeof(TSS)-1, DPL_KERN);
-	gdt[6] = SEG(STA_W,         0xb8000,       0xffffffff, DPL_USER); 
+	//gdt[6] = SEG(STA_W,         0xb8000,       0xffffffff, DPL_USER); 
+	gdt[6] = SEG(STA_W,         0xb8000,       0xffffffff, DPL_KERN); 
 	gdt[SEG_TSS].s = 0;
 	setGdt(gdt, sizeof(gdt));
 	tss.ss0=KSEL(SEG_KDATA);
-	tss.esp0=0x7f00000;
 	/*
 	 * 初始化TSS
 	 */
 
 	//tss.ss0=0x8;
-	//tss.esp0=0x8000000;
+	tss.esp0=0x8000000;
 	asm volatile("ltr %%ax":: "a" (KSEL(SEG_TSS)));
 
 	/*设置正确的段寄存器*/
@@ -75,26 +75,17 @@ void __attribute__((noinline)) enterUserSpace(uint32_t entry) {
 	asm volatile("pushl $0x1b");
 	asm volatile("pushl %0": :"m"(entry));
 	asm volatile("iret");*/
-	/*uint32_t eflags = 0x00000002;
+	uint32_t eflags = 0x00000002;
 	
 	//asm volatile("movw %%ax, %%es"::"a"(USEL(SEG_UDATA)));  //es
 	//asm volatile("movw %%ax, %%ds"::"a"(USEL(SEG_UDATA)));  //ds
 	asm volatile("pushw %0"::"i"(USEL(SEG_UDATA)));         //ss
-	asm volatile("pushl %0"::"i"(128<<20));                 //esp
+	asm volatile("pushl %0"::"i"(0x6000000));                 //esp
 	//将eflags cs eip依次压栈
 	asm volatile("pushl %0"::"m"(eflags));                  //eflags
 	asm volatile("pushl %0"::"i"(USEL(SEG_UCODE)));	        //cs
 	asm volatile("pushl %0"::"m"(entry));                   //eip
-	*/
-	asm volatile("movl $0x23,%%eax;\
-                  movl %%eax,%%ds;\
-                  movl %%eax,%%es;\
-                  pushl %%eax;\
-                  pushl $(128<<20);\
-                  pushf;\
-                  pushl $0x1b;\
-                  pushl %0;\
-                  "::"m"(entry));
+	
 	enableInterrupt();
 	 asm volatile("iret");
 	//void (*e)(void)=(void*)entry;
@@ -106,7 +97,7 @@ void loadUMain(void) {
 	/*加载用户程序至内存*/
 	char buf[102400],*p=buf;
 	int i;
-	for(i=201;i<=400;++i)
+	for(i=201;i<=212;++i)
 	{
 		readSect(p,i);
 		p+=512;
@@ -115,10 +106,11 @@ void loadUMain(void) {
 	struct ProgramHeader *ph=(void *)(buf+elf->phoff),*eph=ph+elf->phnum;
 
 	for (;ph<eph;++ph)
+	for(i=0;i<elf->phnum;++i,++ph)
 	{
 		if(ph->type==1)
 		{
-			memcpy((void *)ph->vaddr,buf+ph->off,ph->filesz);
+			memcpy((void *)ph->vaddr,buf+ph->off,ph->memsz);
 			memset((void *)(ph->vaddr+ph->filesz),0,ph->memsz-ph->filesz);
 		}
 	}

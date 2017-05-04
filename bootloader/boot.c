@@ -17,7 +17,7 @@ void bootMain(void) {
 	{
 		if(ph->type==1)
 		{
-			memcpy((void *)ph->vaddr,buf+ph->off,ph->filesz);
+			memcpy((void *)ph->vaddr,buf+ph->off,ph->memsz);
 			memset((void *)(ph->vaddr+ph->filesz),0,ph->memsz-ph->filesz);
 		}
 	}

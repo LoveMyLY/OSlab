@@ -1,8 +1,11 @@
 #include "x86.h"
 #include "device.h"
 #include "common.h"
+#include <string.h>
 
-
+int scrX=5,scrY=0;
+extern struct ProcessTable pcb[MAX_PCB_NUM];
+extern int curpcb;
 void syscallHandle(struct TrapFrame *tf);
 
 void GProtectFaultHandle(struct TrapFrame *tf);
@@ -11,6 +14,8 @@ void Intrtime(struct TrapFrame *tf);
 int sys_fork(struct TrapFrame *tf);
 int sys_sleep(struct TrapFrame *tf);
 int sys_exit(struct TrapFrame *tf);
+
+extern SegDesc gdt[NR_SEGMENTS];
 
 void irqHandle(struct TrapFrame *tf) {
 	/*
@@ -23,6 +28,10 @@ void irqHandle(struct TrapFrame *tf) {
 	//asm volatile("movw %%ax, %%ss"::"a"(KSEL(SEG_KDATA)));
 	asm volatile("movw $0x30,%%ax");
 	asm volatile("movw %%ax,%%gs");*/
+/*	if(curpcb==1)
+		gdt[6]=SEG(STA_W,0xb8000,0xffffffff,DPL_KERN);
+	else if(curpcb==2)
+		gdt[6]=SEG(STA_W,0x10b8000,0xffffffff,DPL_KERN);*/
 	asm volatile("\
             movw $0x10,%ax;\
             movw %ax,%ds;\
@@ -31,7 +40,6 @@ void irqHandle(struct TrapFrame *tf) {
             movw %ax,%gs;\
             ");
 
-	putChar('0'+curpcb);
 
 	switch(tf->irq) {
 		case -1:
@@ -40,6 +48,7 @@ void irqHandle(struct TrapFrame *tf) {
 			GProtectFaultHandle(tf);
 			break;
 		case 0x20:
+			//putChar('0'+curpcb);
 			/*putChar('t');
 			putChar('i');
 			putChar('m');
@@ -61,37 +70,31 @@ void irqHandle(struct TrapFrame *tf) {
             "::"m"(tf->ds),"m"(tf->es),"m"(tf->gs));
 	}
 }
-int scrX=5,scrY=0;
+
 void __attribute__ ((noinline)) sys_write(struct TrapFrame *tf)
 {
 	
 	int val_ascii=tf->ecx;
-	putChar(tf->ecx);
-	//tf->eax=1;
+	//putChar(*tf->ecx);
+
+	putChar(val_ascii);
 	if(val_ascii=='\n')
 	{
 		scrX++;
 		scrY=0;
 		return ;
 	}
-	asm volatile("\
-			movw $0x10,%ax;\
-			movw %ax,%ds;\
-			movw %ax,%es;\
-			movw $0x30,%ax;\
-			movw %ax,%gs;\
-			");
 	asm volatile("movl %0, %%eax;\
 			imull $80, %%eax;\
 			addl %1, %%eax;\
 			imull $2, %%eax;\
 			movl %%eax, %%edi;\
 			movb %2, %%al;\
-			movb $0x0f, %%ah;\
+			movb $0x0c, %%ah;\
 			movw %%ax, %%gs:(%%edi)\
-			": :"m"(scrX), "m"(scrY),"m"(tf->ecx));
+			": :"m"(scrX), "m"(scrY),"m"(val_ascii));
 	scrY++;
-	if(scrY>=160)
+	if(scrY>=80)
 	{
 		scrX++;
 		scrY=0;
@@ -120,6 +123,7 @@ void syscallHandle(struct TrapFrame *tf) {
 			putChar('p');*/
 			//putChar('0'+curpcb);
 			sys_sleep(tf);
+			
 			break;
 		case 4:
 			sys_write(tf);break;

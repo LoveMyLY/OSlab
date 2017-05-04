@@ -4,6 +4,8 @@
 	> Mail: 151220055@smail.nju.edu.cn
 	> Created Time: 2017年05月01日 星期一 18时19分01秒
  ************************************************************************/
+#include"x86.h"
+#include"device.h"
 
 #define TIMER_PORT 0x40
 #define FREQ_8253 1193182

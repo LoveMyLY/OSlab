@@ -3,14 +3,17 @@
 int data = 0;
 
 int uEntry(void) {
-    int ret = fork();
+    //int ret = fork();
 	//printf("%d\n",ret);
+	int ret=fork();
     int i = 8;
 
     if (ret == 0) {
         data = 2;
         while( i != 0) {
             i --;
+			//printf("%d\n",ret);
+            //printf("Child Process: Pong %d, %d;\n", *(&data+0x1000000), *(&i+0x1000000));
             printf("Child Process: Pong %d, %d;\n", data, i);
             sleep(128);
         }
@@ -20,6 +23,7 @@ int uEntry(void) {
         data = 1;
         while( i != 0) {
             i --;
+			//printf("%d\n",ret);
             printf("Father Process: Ping %d, %d;\n", data, i);
             sleep(128);
         }

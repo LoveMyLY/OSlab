@@ -20,7 +20,6 @@ int32_t syscall(int num, uint32_t a1,uint32_t a2,
 	asm volatile("movl %0, %%edx"::"g"(a3));
 	asm volatile("movl %0, %%edi"::"g"(a4));
 	asm volatile("movl %0, %%esi"::"g"(a5));
-
 	asm volatile("int $0x80");*/
 
 	asm volatile("int $0x80":"=a"(ret):"a"(num),"b"(a1),"c"(a2),"d"(a3),"D"(a4),"S"(a5));	
@@ -261,4 +260,3 @@ int exit()
 	asm volatile("popl %eax");
 	return 0;
 }
-
