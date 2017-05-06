@@ -6,6 +6,7 @@
  * io lib here
  * 库函数写在这
  */
+extern int curpcb;
 int32_t syscall(int num, uint32_t a1,uint32_t a2,
 		uint32_t a3, uint32_t a4, uint32_t a5)
 {
@@ -150,6 +151,8 @@ void printhex(unsigned int ui)
 }
 
 void printf(const char *format,...){
+	//if(curpcb==2)
+	//	format+=0x1000000;
 
 	//char buf[1024];
 	//int i=0;

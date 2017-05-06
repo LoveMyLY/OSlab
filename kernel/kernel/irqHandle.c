@@ -6,6 +6,7 @@
 int scrX=5,scrY=0;
 extern struct ProcessTable pcb[MAX_PCB_NUM];
 extern int curpcb;
+extern SegDesc gdt[NR_SEGMENTS];
 void syscallHandle(struct TrapFrame *tf);
 
 void GProtectFaultHandle(struct TrapFrame *tf);
@@ -40,7 +41,9 @@ void irqHandle(struct TrapFrame *tf) {
             movw %ax,%gs;\
             ");
 
-
+	//putChar('0'+curpcb);
+	setGdt(gdt,sizeof(gdt));
+	putChar('0'+gdt[SEG_UDATA].base_31_24);
 	switch(tf->irq) {
 		case -1:
 			break;

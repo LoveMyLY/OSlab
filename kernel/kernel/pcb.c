@@ -106,11 +106,14 @@ void Intrtime(struct TrapFrame *tf)
 	pcb[curpcb].state=RUNNING;
 	*tf=pcb[curpcb].tf;
 	if(curpcb==1)
-		gdt[SEG_UDATA].base_31_24=0;
+		//gdt[SEG_UDATA].base_31_24=0;
+		gdt[SEG_UDATA] = SEG(STA_W,         0,       0xffffffff, DPL_USER);
 	else if(curpcb==2)
-		gdt[SEG_UDATA].base_31_24=1;
-	gdt[SEG_UDATA].base_15_0=0;
-	gdt[SEG_UDATA].base_23_16=0;
+		gdt[SEG_UDATA] = SEG(STA_W,         0x1000000,       0xffffffff, DPL_USER);
+	setGdt(gdt, sizeof(gdt));
+		//gdt[SEG_UDATA].base_31_24=1;
+	//gdt[SEG_UDATA].base_15_0=0;
+	//gdt[SEG_UDATA].base_23_16=0;
 	//debug();
 }
 
@@ -190,12 +193,18 @@ int sys_fork(struct TrapFrame *tf)
 		putChar('y');
 	else
 		putChar('n');*/
-	if(curpcb==1)
+	/*if(curpcb==1)
 		gdt[SEG_UDATA].base_31_24=0;
 	else if(curpcb==2)
 		gdt[SEG_UDATA].base_31_24=1;
 	gdt[SEG_UDATA].base_15_0=0;
-	gdt[SEG_UDATA].base_23_16=0;
+	gdt[SEG_UDATA].base_23_16=0;*/
+	if(curpcb==1)
+		//gdt[SEG_UDATA].base_31_24=0;
+		gdt[SEG_UDATA] = SEG(STA_W,         0,       0xffffffff, DPL_USER);
+	else if(curpcb==2)
+		gdt[SEG_UDATA] = SEG(STA_W,         0x1000000,       0xffffffff, DPL_USER);
+	setGdt(gdt, sizeof(gdt));
 	/*putChar('\n');
 	putChar('0'+pcb[1].state);
 	putChar(' ');
@@ -244,12 +253,19 @@ int sys_sleep(struct TrapFrame *tf)
 	pcb[index].timeCount=10;
 	curpcb=index;
 	*tf=pcb[curpcb].tf;
-	if(curpcb==1)
+	/*if(curpcb==1)
 		gdt[SEG_UDATA].base_31_24=0;
 	else if(curpcb==2)
 		gdt[SEG_UDATA].base_31_24=1;
 	gdt[SEG_UDATA].base_15_0=0;
-	gdt[SEG_UDATA].base_23_16=0;
+	gdt[SEG_UDATA].base_23_16=0;*/
+
+	if(curpcb==1)
+		//gdt[SEG_UDATA].base_31_24=0;
+		gdt[SEG_UDATA] = SEG(STA_W,         0,       0xffffffff, DPL_USER);
+	else if(curpcb==2)
+		gdt[SEG_UDATA] = SEG(STA_W,         0x1000000,       0xffffffff, DPL_USER);
+	setGdt(gdt, sizeof(gdt));
 	return 0;
 }
 
@@ -282,12 +298,18 @@ int sys_exit(struct TrapFrame *tf)
 		}	
 	}
 	*tf=pcb[curpcb].tf;
-	if(curpcb==1)
+	/*if(curpcb==1)
 		gdt[SEG_UDATA].base_31_24=0;
 	else if(curpcb==2)
 		gdt[SEG_UDATA].base_31_24=1;
 	gdt[SEG_UDATA].base_15_0=0;
-	gdt[SEG_UDATA].base_23_16=0;
+	gdt[SEG_UDATA].base_23_16=0;*/
+	if(curpcb==1)
+		//gdt[SEG_UDATA].base_31_24=0;
+		gdt[SEG_UDATA] = SEG(STA_W,         0,       0xffffffff, DPL_USER);
+	else if(curpcb==2)
+		gdt[SEG_UDATA] = SEG(STA_W,         0x1000000,       0xffffffff, DPL_USER);
+	setGdt(gdt, sizeof(gdt));
 	return 0;
 }
 
