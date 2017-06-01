@@ -112,7 +112,11 @@ asmDoIrq:
 	pushl %esp
 	call irqHandle
 	addl $4, %esp
-	addl $16, %esp
+	//addl $16, %esp
+	popl %gs
+	popl %fs
+	popl %es
+	popl %ds
 	popal
 	addl $4, %esp //interrupt vector is on top of kernel stack
 	addl $4, %esp //error code is on top of kernel stack

@@ -12,17 +12,17 @@ Disassembly of section .text:
   200005:	e8 da 03 00 00       	call   2003e4 <fork>
   20000a:	85 c0                	test   %eax,%eax
   20000c:	75 4a                	jne    200058 <uEntry+0x58>
-  20000e:	c7 05 64 16 20 00 02 	movl   $0x2,0x201664
+  20000e:	c7 05 30 17 20 00 02 	movl   $0x2,0x201730
   200015:	00 00 00 
   200018:	b8 02 00 00 00       	mov    $0x2,%eax
   20001d:	bb 08 00 00 00       	mov    $0x8,%ebx
   200022:	eb 05                	jmp    200029 <uEntry+0x29>
-  200024:	a1 64 16 20 00       	mov    0x201664,%eax
+  200024:	a1 30 17 20 00       	mov    0x201730,%eax
   200029:	4b                   	dec    %ebx
   20002a:	51                   	push   %ecx
   20002b:	53                   	push   %ebx
   20002c:	50                   	push   %eax
-  20002d:	68 24 04 20 00       	push   $0x200424
+  20002d:	68 70 04 20 00       	push   $0x200470
   200032:	e8 6d 02 00 00       	call   2002a4 <printf>
   200037:	c7 04 24 80 00 00 00 	movl   $0x80,(%esp)
   20003e:	e8 b9 03 00 00       	call   2003fc <sleep>
@@ -37,18 +37,18 @@ Disassembly of section .text:
   200056:	66 90                	xchg   %ax,%ax
   200058:	40                   	inc    %eax
   200059:	74 f4                	je     20004f <uEntry+0x4f>
-  20005b:	c7 05 64 16 20 00 01 	movl   $0x1,0x201664
+  20005b:	c7 05 30 17 20 00 01 	movl   $0x1,0x201730
   200062:	00 00 00 
   200065:	b8 01 00 00 00       	mov    $0x1,%eax
   20006a:	bb 08 00 00 00       	mov    $0x8,%ebx
   20006f:	eb 08                	jmp    200079 <uEntry+0x79>
   200071:	8d 76 00             	lea    0x0(%esi),%esi
-  200074:	a1 64 16 20 00       	mov    0x201664,%eax
+  200074:	a1 30 17 20 00       	mov    0x201730,%eax
   200079:	4b                   	dec    %ebx
   20007a:	52                   	push   %edx
   20007b:	53                   	push   %ebx
   20007c:	50                   	push   %eax
-  20007d:	68 41 04 20 00       	push   $0x200441
+  20007d:	68 8d 04 20 00       	push   $0x20048d
   200082:	e8 1d 02 00 00       	call   2002a4 <printf>
   200087:	c7 04 24 80 00 00 00 	movl   $0x80,(%esp)
   20008e:	e8 69 03 00 00       	call   2003fc <sleep>
@@ -237,7 +237,7 @@ Disassembly of section .text:
   200223:	c3                   	ret    
   200224:	8d 7d d4             	lea    -0x2c(%ebp),%edi
   200227:	89 7d c0             	mov    %edi,-0x40(%ebp)
-  20022a:	be 5f 04 20 00       	mov    $0x20045f,%esi
+  20022a:	be ab 04 20 00       	mov    $0x2004ab,%esi
   20022f:	b9 03 00 00 00       	mov    $0x3,%ecx
   200234:	f3 a5                	rep movsl %ds:(%esi),%es:(%edi)
   200236:	8a 45 de             	mov    -0x22(%ebp),%al
@@ -455,3 +455,52 @@ Disassembly of section .text:
   200420:	31 c0                	xor    %eax,%eax
   200422:	5d                   	pop    %ebp
   200423:	c3                   	ret    
+
+00200424 <sem_init>:
+  200424:	55                   	push   %ebp
+  200425:	89 e5                	mov    %esp,%ebp
+  200427:	83 ec 10             	sub    $0x10,%esp
+  20042a:	50                   	push   %eax
+  20042b:	53                   	push   %ebx
+  20042c:	b8 06 00 00 00       	mov    $0x6,%eax
+  200431:	8b 5d 0c             	mov    0xc(%ebp),%ebx
+  200434:	cd 80                	int    $0x80
+  200436:	89 45 fc             	mov    %eax,-0x4(%ebp)
+  200439:	5b                   	pop    %ebx
+  20043a:	58                   	pop    %eax
+  20043b:	8b 45 fc             	mov    -0x4(%ebp),%eax
+  20043e:	c9                   	leave  
+  20043f:	c3                   	ret    
+
+00200440 <sem_wait>:
+  200440:	55                   	push   %ebp
+  200441:	89 e5                	mov    %esp,%ebp
+  200443:	50                   	push   %eax
+  200444:	b8 07 00 00 00       	mov    $0x7,%eax
+  200449:	cd 80                	int    $0x80
+  20044b:	58                   	pop    %eax
+  20044c:	31 c0                	xor    %eax,%eax
+  20044e:	5d                   	pop    %ebp
+  20044f:	c3                   	ret    
+
+00200450 <sem_post>:
+  200450:	55                   	push   %ebp
+  200451:	89 e5                	mov    %esp,%ebp
+  200453:	50                   	push   %eax
+  200454:	b8 08 00 00 00       	mov    $0x8,%eax
+  200459:	cd 80                	int    $0x80
+  20045b:	58                   	pop    %eax
+  20045c:	31 c0                	xor    %eax,%eax
+  20045e:	5d                   	pop    %ebp
+  20045f:	c3                   	ret    
+
+00200460 <sem_destroy>:
+  200460:	55                   	push   %ebp
+  200461:	89 e5                	mov    %esp,%ebp
+  200463:	50                   	push   %eax
+  200464:	b8 09 00 00 00       	mov    $0x9,%eax
+  200469:	cd 80                	int    $0x80
+  20046b:	58                   	pop    %eax
+  20046c:	31 c0                	xor    %eax,%eax
+  20046e:	5d                   	pop    %ebp
+  20046f:	c3                   	ret    

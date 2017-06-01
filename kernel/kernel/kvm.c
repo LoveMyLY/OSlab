@@ -77,8 +77,8 @@ void __attribute__((noinline)) enterUserSpace(uint32_t entry) {
 	asm volatile("iret");*/
 	uint32_t eflags = 0x00000002;
 	
-	//asm volatile("movw %%ax, %%es"::"a"(USEL(SEG_UDATA)));  //es
-	//asm volatile("movw %%ax, %%ds"::"a"(USEL(SEG_UDATA)));  //ds
+	asm volatile("movw %%ax, %%es"::"a"(USEL(SEG_UDATA)));  //es
+	asm volatile("movw %%ax, %%ds"::"a"(USEL(SEG_UDATA)));  //ds
 	asm volatile("pushw %0"::"i"(USEL(SEG_UDATA)));         //ss
 	asm volatile("pushl %0"::"i"(0x6000000));                 //esp
 	//将eflags cs eip依次压栈

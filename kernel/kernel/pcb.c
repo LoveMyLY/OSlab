@@ -29,23 +29,34 @@ void debug()
 	int i=1;
 	for(i=1;i<MAX_PCB_NUM&&pcb[i].inuse==1;++i)
 	{
-		putChar('0'+pcb[i].state);
+		//putChar('0'+pcb[i].state);
 		if(pcb[i].state==SLEEP)
-			putChar('0'+pcb[i].sleepTime);
-		else
-			putChar('0'+pcb[i].timeCount);
+		{
+			putChar('s');
+			putChar('0'+pcb[i].sleepTime/100);
+			putChar('0'+(pcb[i].sleepTime%100)/10);
+			putChar('0'+(pcb[i].sleepTime%10));
+		}
+		else if(pcb[i].state==RUNNING)
+		{
+			putChar('r');
+			putChar('i');
+		}
+		else if(pcb[i].state==RUNNABLE)
+		{
+			putChar('r');
+			putChar('e');
+		}
 		putChar(' ');
 	}
+	putChar('0'+gdt[SEG_UDATA].base_31_24);
+	putChar('\n');
 }
 void Intrtime(struct TrapFrame *tf)
 {
-	//putChar('a');
-	//putChar('0'+curpcb);
 	pcb[curpcb].tf=*tf;
 	pcb[curpcb].state=RUNNABLE;
-	//putChar('0'+pcb[curpcb].timeCount);
 	pcb[curpcb].timeCount--;
-	//putChar('0'+pcb[curpcb].timeCount);
 	int i=1,index=0;
 	for(i=1;i<MAX_PCB_NUM;++i)
 	{
@@ -58,14 +69,6 @@ void Intrtime(struct TrapFrame *tf)
 				pcb[i].timeCount=10;
 			}
 		}
-		/*putChar('\n');
-		putChar('0'+pcb[1].state);
-		putChar('0'+pcb[1].sleepTime);	*/
-		/*if(pcb[i].sleepTime==0)
-		{
-			pcb[i].state=RUNNABLE;
-			pcb[i].timeCount=10;
-		}*/
 	}
 	if(pcb[curpcb].timeCount<=0&&curpcb!=0)
 	{
@@ -73,11 +76,6 @@ void Intrtime(struct TrapFrame *tf)
 		pcb[curpcb].state=RUNNABLE;
 		for(i=1;i<MAX_PCB_NUM;++i)
 		{
-			/*putChar('\n');
-			putChar('0'+i);
-			putChar('0'+pcb[i].state);
-			putChar('0'+pcb[i].inuse);*/
-			//putChar('\n');
 			if(pcb[i].state==RUNNABLE&&pcb[i].inuse==1&&i!=curpcb)
 			{
 				index=i;
@@ -105,16 +103,12 @@ void Intrtime(struct TrapFrame *tf)
 	}
 	pcb[curpcb].state=RUNNING;
 	*tf=pcb[curpcb].tf;
-	if(curpcb==1)
-		//gdt[SEG_UDATA].base_31_24=0;
-		gdt[SEG_UDATA] = SEG(STA_W,         0,       0xffffffff, DPL_USER);
+	if(curpcb==1||curpcb==0)
+		gdt[SEG_UDATA].base_31_24=0;
 	else if(curpcb==2)
-		gdt[SEG_UDATA] = SEG(STA_W,         0x1000000,       0xffffffff, DPL_USER);
-	setGdt(gdt, sizeof(gdt));
-		//gdt[SEG_UDATA].base_31_24=1;
-	//gdt[SEG_UDATA].base_15_0=0;
-	//gdt[SEG_UDATA].base_23_16=0;
-	//debug();
+		gdt[SEG_UDATA].base_31_24=1;
+	gdt[SEG_UDATA].base_15_0=0;
+	gdt[SEG_UDATA].base_23_16=0;
 }
 
 
@@ -156,8 +150,6 @@ void initPcb()
 
 int sys_fork(struct TrapFrame *tf)
 {
-	//putChar('b');
-	//putChar('0'+curpcb);
 	pcb[curpcb].tf=*tf;
 	pcb[curpcb].state=RUNNABLE;
 	int i=1,index=-1;
@@ -171,8 +163,6 @@ int sys_fork(struct TrapFrame *tf)
 		}
 	}
 	
-	//for(i=0;i<MAX_PCB_NUM;++i)
-		//putChar('0'+pcb[i].inuse);
 	pcb[index].state=RUNNABLE;
 	pcb[index].pid=index;
 	pcb[index].timeCount=10;
@@ -182,42 +172,13 @@ int sys_fork(struct TrapFrame *tf)
 	pcb[index].tf.esp=pcb[curpcb].tf.esp;
 	pcb[index].tf.ebp=pcb[curpcb].tf.ebp;
 	memcpy((void *)pcb[index].tf.esp+0x1000000,(void *)pcb[curpcb].tf.esp,0x6000000-pcb[index].tf.esp);
-//	pcb[index].tf.esp+=0x1000000;
-//	pcb[index].tf.ebp+=0x1000000;
 	memcpy((void *)0x1000000+0x200000,(void *)0x200000,0x2000);
 	pcb[curpcb].tf.eax=pcb[index].pid;
-	curpcb=index;
-	pcb[curpcb].state=RUNNING;
-	*tf=pcb[curpcb].tf;
-	/*if(pcb[1].tf.esp==pcb[2].tf.esp)
-		putChar('y');
-	else
-		putChar('n');*/
-	/*if(curpcb==1)
-		gdt[SEG_UDATA].base_31_24=0;
-	else if(curpcb==2)
-		gdt[SEG_UDATA].base_31_24=1;
-	gdt[SEG_UDATA].base_15_0=0;
-	gdt[SEG_UDATA].base_23_16=0;*/
-	if(curpcb==1)
-		//gdt[SEG_UDATA].base_31_24=0;
-		gdt[SEG_UDATA] = SEG(STA_W,         0,       0xffffffff, DPL_USER);
-	else if(curpcb==2)
-		gdt[SEG_UDATA] = SEG(STA_W,         0x1000000,       0xffffffff, DPL_USER);
-	setGdt(gdt, sizeof(gdt));
-	/*putChar('\n');
-	putChar('0'+pcb[1].state);
-	putChar(' ');
-	putChar('0'+pcb[1].inuse);
-	putChar('\n');*/
 	return index;
 }
 
 int sys_sleep(struct TrapFrame *tf)
 {
-	//putChar('c');
-	//putChar('0'+curpcb);
-	//debug();
 	pcb[curpcb].tf=*tf;
 	pcb[curpcb].state=RUNNABLE;
 	pcb[curpcb].timeCount--;
@@ -233,11 +194,6 @@ int sys_sleep(struct TrapFrame *tf)
 				pcb[i].timeCount=10;
 			}
 		}	
-		/*if(pcb[i].sleepTime==0)
-		{
-			pcb[i].state=RUNNABLE;
-			pcb[i].timeCount=10;
-		}*/
 	}
 	pcb[curpcb].sleepTime=tf->ebx;
 	pcb[curpcb].state=SLEEP;
@@ -253,25 +209,16 @@ int sys_sleep(struct TrapFrame *tf)
 	pcb[index].timeCount=10;
 	curpcb=index;
 	*tf=pcb[curpcb].tf;
-	/*if(curpcb==1)
+
+	if(curpcb==1||curpcb==0)
 		gdt[SEG_UDATA].base_31_24=0;
 	else if(curpcb==2)
 		gdt[SEG_UDATA].base_31_24=1;
-	gdt[SEG_UDATA].base_15_0=0;
-	gdt[SEG_UDATA].base_23_16=0;*/
-
-	if(curpcb==1)
-		//gdt[SEG_UDATA].base_31_24=0;
-		gdt[SEG_UDATA] = SEG(STA_W,         0,       0xffffffff, DPL_USER);
-	else if(curpcb==2)
-		gdt[SEG_UDATA] = SEG(STA_W,         0x1000000,       0xffffffff, DPL_USER);
-	setGdt(gdt, sizeof(gdt));
 	return 0;
 }
 
 int sys_exit(struct TrapFrame *tf)
 {
-	//putChar('d');
 	pcb[curpcb].inuse=0;
 	int i=1,index=0;
 	for(i=1;i<MAX_PCB_NUM;++i)
@@ -298,18 +245,10 @@ int sys_exit(struct TrapFrame *tf)
 		}	
 	}
 	*tf=pcb[curpcb].tf;
-	/*if(curpcb==1)
+	if(curpcb==1||curpcb==0)
 		gdt[SEG_UDATA].base_31_24=0;
 	else if(curpcb==2)
 		gdt[SEG_UDATA].base_31_24=1;
-	gdt[SEG_UDATA].base_15_0=0;
-	gdt[SEG_UDATA].base_23_16=0;*/
-	if(curpcb==1)
-		//gdt[SEG_UDATA].base_31_24=0;
-		gdt[SEG_UDATA] = SEG(STA_W,         0,       0xffffffff, DPL_USER);
-	else if(curpcb==2)
-		gdt[SEG_UDATA] = SEG(STA_W,         0x1000000,       0xffffffff, DPL_USER);
-	setGdt(gdt, sizeof(gdt));
 	return 0;
 }
 

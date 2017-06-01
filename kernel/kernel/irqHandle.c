@@ -3,11 +3,12 @@
 #include "common.h"
 #include <string.h>
 
-int scrX=5,scrY=0;
+int scrX=0,scrY=0;
 extern struct ProcessTable pcb[MAX_PCB_NUM];
 extern int curpcb;
 extern SegDesc gdt[NR_SEGMENTS];
 void syscallHandle(struct TrapFrame *tf);
+extern Semaphore xhl[2];
 
 void GProtectFaultHandle(struct TrapFrame *tf);
 
@@ -15,6 +16,11 @@ void Intrtime(struct TrapFrame *tf);
 int sys_fork(struct TrapFrame *tf);
 int sys_sleep(struct TrapFrame *tf);
 int sys_exit(struct TrapFrame *tf);
+
+int sys_init(struct TrapFrame *tf);
+int sys_wait(struct TrapFrame *tf);
+int sys_post(struct TrapFrame *tf);
+int sys_destroy(struct TrapFrame *tf);
 
 extern SegDesc gdt[NR_SEGMENTS];
 
@@ -24,15 +30,6 @@ void irqHandle(struct TrapFrame *tf) {
 	 */
 	/* Reassign segment register */
 
-	/*asm volatile("movw %%ax, %%es"::"a"(KSEL(SEG_KDATA)));
-	asm volatile("movw %%ax, %%ds"::"a"(KSEL(SEG_KDATA)));
-	//asm volatile("movw %%ax, %%ss"::"a"(KSEL(SEG_KDATA)));
-	asm volatile("movw $0x30,%%ax");
-	asm volatile("movw %%ax,%%gs");*/
-/*	if(curpcb==1)
-		gdt[6]=SEG(STA_W,0xb8000,0xffffffff,DPL_KERN);
-	else if(curpcb==2)
-		gdt[6]=SEG(STA_W,0x10b8000,0xffffffff,DPL_KERN);*/
 	asm volatile("\
             movw $0x10,%ax;\
             movw %ax,%ds;\
@@ -40,10 +37,8 @@ void irqHandle(struct TrapFrame *tf) {
             movw $0x30,%ax;\
             movw %ax,%gs;\
             ");
+	
 
-	//putChar('0'+curpcb);
-	setGdt(gdt,sizeof(gdt));
-	putChar('0'+gdt[SEG_UDATA].base_31_24);
 	switch(tf->irq) {
 		case -1:
 			break;
@@ -51,16 +46,7 @@ void irqHandle(struct TrapFrame *tf) {
 			GProtectFaultHandle(tf);
 			break;
 		case 0x20:
-			//putChar('0'+curpcb);
-			/*putChar('t');
-			putChar('i');
-			putChar('m');
-			putChar('e');
-			putChar('r');*/
 			Intrtime(tf);
-			//putChar('\n');
-			//putChar('0'+curpcb);
-			//putChar(' ');
 			break;
 		case 0x80:
 			syscallHandle(tf);
@@ -78,7 +64,6 @@ void __attribute__ ((noinline)) sys_write(struct TrapFrame *tf)
 {
 	
 	int val_ascii=tf->ecx;
-	//putChar(*tf->ecx);
 
 	putChar(val_ascii);
 	if(val_ascii=='\n')
@@ -102,8 +87,6 @@ void __attribute__ ((noinline)) sys_write(struct TrapFrame *tf)
 		scrX++;
 		scrY=0;
 	}
-	//putChar(tf->ecx);
-	//tf->eax=1;
 }
 void syscallHandle(struct TrapFrame *tf) {
 	/* 实现系统调用*/
@@ -111,31 +94,23 @@ void syscallHandle(struct TrapFrame *tf) {
 	switch(tf->eax)
 	{
 		case 2:
-			/*putChar('f');
-			putChar('o');
-			putChar('r');
-			putChar('k');*/
 			sys_fork(tf);
-			//putChar('0'+i);
 			break;
 		case 3:
-			/*putChar('s');
-			putChar('l');
-			putChar('e');
-			putChar('e');
-			putChar('p');*/
-			//putChar('0'+curpcb);
 			sys_sleep(tf);
-			
 			break;
 		case 4:
 			sys_write(tf);break;
 		case 5:
-			/*putChar('e');
-			putChar('x');
-			putChar('i');
-			putChar('t');*/
 			sys_exit(tf);break;
+		case 6:
+			sys_init(tf);break;
+		case 7:
+			sys_wait(tf);break;
+		case 8:
+			sys_post(tf);break;
+		case 9:
+			sys_destroy(tf);break;
 		default:
 			assert(0);
 	}

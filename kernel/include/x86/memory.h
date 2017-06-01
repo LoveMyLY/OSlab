@@ -88,6 +88,15 @@ struct SegDesc {
 };
 typedef struct SegDesc SegDesc;
 
+struct Semaphore
+{
+	int value;
+	int wait[10];
+	int wait_count;
+};
+typedef struct Semaphore Semaphore;
+Semaphore xhl[2];
+
 #define SEG(type, base, lim, dpl) (SegDesc)                   \
 {	((lim) >> 12) & 0xffff, (uint32_t)(base) & 0xffff,        \
 	((uint32_t)(base) >> 16) & 0xff, type, 1, dpl, 1,         \
